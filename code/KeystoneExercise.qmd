@@ -1,0 +1,75 @@
+---
+title: "Workshop2_KeystoneExercise"
+author: "Hannah Brown"
+format: html
+editor: visual
+output: 
+ html_document:
+    code_folding: show
+    collapse: no
+    df_print: paged
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 10
+    highlight: textmate
+    theme: spacelab
+    toc: yes
+    toc_float: yes
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Module 2 - Exercise 2.12
+
+
+```{r setup, include=FALSE}
+# Set options, housekeeping
+knitr::opts_chunk$set(
+  echo = FALSE,
+  include = TRUE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+#Introduction
+Here we are going to wrangle messy data on the Ross River estuary fish surveys and produce final clean tables and figures
+
+#Housekeeping
+```{r}
+rm(list=ls())
+```
+
+#Packages
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+#Load files
+
+##Metadata
+```{r}
+metadata <- read.csv("../data/workshop2/estuary_metadata.csv")
+```
+
+#Main dataset
+```{r}
+catch1 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet =1)
+catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet =2)
+catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet =3)
+catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet =4)
+
+catch_data <- bind_rows(catch1, catch2, catch3, catch4)
+```
+
+
+```{r}
+catch_data
+head(catch_data)
+glimpse(catch_data)
+str(catch_data)
+```
+```{r}
+
+```
+
