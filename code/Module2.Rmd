@@ -26,12 +26,14 @@ acoustic_stream <- read_tsv(here::here("data/acoustic_telemetry_stream.txt"))
 # Practice Import C: Targeting a specific sheet in a multi-tab Excel spreadsheet
 fisheries_annual <- read_excel(here::here("data/fish_catch_data.xlsx"), sheet = "Commercial_2026")
 ```
+
 ```{r}
 # Read in mangrove_data
 mangrove_data <- read_csv(file = here::here("data/mangrove_survey_raw.csv"))
 
 #messy data
 ```
+
 ```{r}
 # Use args within read_csv to skip headers and declare missing flags
 mangrove_data <- read_csv(
@@ -41,6 +43,7 @@ mangrove_data <- read_csv(
 
 
 ```
+
 ```{r}
 # Force a modern tibble to degrade into a legacy base R data frame structure
 benthic_cover_df <- as.data.frame(benthic_cover)
@@ -54,6 +57,7 @@ print(benthic_cover_df)
 print(benthic_cover)
 
 ```
+
 ```{r}
 # Install the data package (execute this command once in your console pane and then delete!)
 # install.packages("palmerpenguins")
@@ -67,11 +71,13 @@ glimpse(penguins) # tidyverse version (from dplyr package)
 str(penguins) # base R version
 
 ```
+
 ```{r}
 # Generate an exploratory summary matrix
 summary(penguins)
 
 ```
+
 ```{r}
 # Vertically slice specific morphometric variables by explicit name
 morphology_metrics <- select(penguins, species, bill_length_mm, bill_depth_mm, body_mass_g)
@@ -84,6 +90,7 @@ spatial_block <- select(penguins, species:island)
 clean_scientific_fields <- select(penguins, -year)
 
 ```
+
 ```{r}
 # Isolate observations belonging to a single categorical target group
 adelie_cohort <- filter(penguins, species == "Adelie")
@@ -131,6 +138,7 @@ penguin_ratios <- penguins  |>
 glimpse(penguin_ratios)
 
 ```
+
 ```{r}
 # Grouping our active memory penguins by species
 grouped_penguins <- group_by(penguins, species)
@@ -146,6 +154,7 @@ species_mass_summary <- summarise(grouped_penguins,
 print(species_mass_summary)
 
 ```
+
 ```{r}
 # Overcoming the missing value trap using na.rm = TRUE
 biological_signal <- penguins %>%
@@ -159,6 +168,7 @@ biological_signal <- penguins %>%
 print(biological_signal)
 
 ```
+
 ```{r}
 # Summary table
 penguins %>%
@@ -181,6 +191,7 @@ y = "Body Mass (g)"
 )
                       
 ```
+
 ```{r}
 # Pipe directly from aggregation to plotting with error bars
 mass_compare_plot <- penguins |>
@@ -205,6 +216,7 @@ mass_compare_plot <- penguins |>
 mass_compare_plot
 
 ```
+
 ```{r}
 # Pipe directly from aggregation to plotting with error bars
 mass_compare_plot <- penguins |>
@@ -230,6 +242,7 @@ mass_compare_plot <- penguins |>
 mass_compare_plot
 
 ```
+
 ```{r}
 # Create output directories if they do not exist:
 if (!dir.exists("../output/figures")) dir.create("../output/figures") # folder for figs
@@ -657,6 +670,7 @@ penguins_spatial <- penguins |>
 head(penguins_spatial)
 ```
 ```{r}
+# exercise 3 - make table
 max_body_mass_table <- penguins_spatial |>
   drop_na(body_mass_g) |>
   group_by(species, island) |>
