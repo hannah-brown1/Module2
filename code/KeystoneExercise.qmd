@@ -19,7 +19,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
-## Module 2 - Exercise 2.12
+# Module 2 - Exercise 2.12
 
 ```{r setup, include=FALSE}
 # Set options, housekeeping
@@ -30,15 +30,17 @@ knitr::opts_chunk$set(
   warning = FALSE)
 ```
 
-#Introduction Here we are going to wrangle messy data on the Ross River estuary fish surveys and produce final clean tables and figures
+# Introduction
 
-# Housekeeping
+### Here we are going to wrangle in messy data on the Ross River estuary fish surveys and produce final clean tables and figure. We have 4 separate files that were provided to us by a former PhD student. We know we have data for 4 sites, 4 species, and 30 days of sampling. We also have metadata on the sites and sensor data on the environmental conditions at each site.
+
+## Housekeeping
 
 ```{r}
 rm(list=ls())
 ```
 
-# Packages
+## Packages
 
 ```{r}
 library(tidyverse)
@@ -47,20 +49,20 @@ library(readxl)
 
 # Load files
 
-## Metadata
+## Load Metadata
 
 ```{r}
 metadata <- read.csv("../data/workshop2/estuary_metadata.csv")
 ```
 
-# Inspect metadata
+### Inspect metadata
 
 ```{r}
 head(metadata)
 glimpse(metadata)
 ```
 
-## Main dataset
+## Load Main data set
 
 ```{r}
 catch1 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet =1)
@@ -70,7 +72,7 @@ catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet =4)
 
 ```
 
-# Bind rows together
+### Bind rows together
 
 ```{r}
 catch_data <- bind_rows(catch1, catch2, catch3, catch4)
@@ -79,7 +81,7 @@ catch_data <- bind_rows(catch1, catch2, catch3, catch4)
 rm(catch1, catch2, catch3, catch4)
 ```
 
-# Examine data
+### Examine data
 
 ```{r}
 catch_data
@@ -88,7 +90,7 @@ glimpse(catch_data)
 str(catch_data)
 ```
 
-# Find site and species variables in data
+### Find site and species variables in data
 
 ```{r}
 catch_data |>
@@ -98,7 +100,7 @@ catch_data |>
   distinct(species)
 ```
 
-# Clean up site name
+### Clean up site name in catch and meta data to same variables
 
 ```{r}
 catch_data <- catch_data |>
@@ -118,7 +120,7 @@ metadata <- metadata |>
   )
 ```
 
-# Recheck name
+### Recheck name
 
 ```{r}
 catch_data |> 
@@ -128,20 +130,55 @@ catch_data |>
 glimpse(metadata)
 ```
 
-# Load taxonomic dictionary
+## Load taxonomic dictionary
 
 ```{r}
 species_dict <- read_csv("../data/workshop2/species_dictionary.csv")
 head(species_dict)
 ```
 
-# Load sensor data
+### Clean up species name in catch data to match taxonomic dictionary
+
+```{r}
+catch_data <- catch_data |>
+  mutate(
+    species = str_to_lower(str_trim(species)),
+    species = str_replace_all(species, " ", "_")) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor)
+  )
+```
+
+### Check common name matches in catch data and taxonomic dictionary
+
+```{r}
+catch_data |> 
+  distinct(species)
+species_dict |>
+  distinct(common_name)
+```
+
+### Taxonomic translation (common to species)
+
+```{r}
+catch_data <- catch_data |>
+  mutate(common_name = species) |>
+  left_join(species_dict, by = join_by(common_name))
+```
+
+### Check species names in catch data
+
+```{r}
+glimpse(catch_data)
+```
+
+## Load sensor data
 
 ```{r}
 sensor_raw <- read.csv("../data/workshop2/estuary_sonde_data.csv")
 ```
 
-# Check sensor data
+### Check sensor data
 
 ```{r}
 head(sensor_raw)
@@ -150,7 +187,7 @@ glimpse(sensor_raw)
 summary(sensor_raw)
 ```
 
-# Clean up sensor data
+### Clean up sensor data
 
 ```{r}
 sensor_data <- sensor_raw |>
@@ -164,7 +201,7 @@ sensor_data <- sensor_raw |>
   )
 ```
 
-# Summarise 15-minute sonde data into daily means
+### Summarise 15-minute sonde data into daily means
 
 ```{r}
 sensor_daily <- 
@@ -178,42 +215,15 @@ sensor_daily <-
     .groups = "drop")
 ```
 
-# Clean up species name in catch data to match taxonomic dictionary
-
-```{r}
-catch_data <- catch_data |>
-  mutate(
-    species = str_to_lower(str_trim(species)),
-    species = str_replace_all(species, " ", "_")) |> 
-  # Convert all chr to fct
-  mutate(across(where(is.character), as_factor)
-  )
-```
-
-# Check common name matches in catch data and taxonomic dictionary
-
-```{r}
-catch_data |> 
-  distinct(species)
-species_dict |>
-  distinct(common_name)
-```
-
-# Taxonomic translation (common to species)
-
-```{r}
-catch_data <- catch_data |>
-  mutate(common_name = species) |>
-  left_join(species_dict, by = join_by(common_name))
-```
-
-# Join catch data with metadata and sensor data
+## Join catch data with metadata and sensor data
 
 ```{r}
 catch_data_final <- catch_data |>
   left_join(metadata, by = join_by(site == site_name)) |>
   left_join(sensor_daily, by = join_by(site, date))
 ```
+
+## Wrangle final data set
 
 ```{r}
 catch_data_final |> 
@@ -229,33 +239,93 @@ catch_data_final |>
   )
 ```
 
-# Check for salinity differences between zones
+# Final data set is now complete.
+
+# Lets now look at the difference in environmental conditions across these zones.
+
+## Salinity
 
 ```{r}
-sal_sum <-
-catch_data_final |> 
-  group_by(scientific_name, zone) |>
+# Let's make a table
+sal_sum <- 
+  catch_data_final |>
+  group_by(zone) |>
   summarise(
-    sem_salinity = sd(mean_salinity, na.rm = TRUE) / sqrt(n()),
-    sd_salinity = sd(mean_salinity, na.rm = TRUE),
-    median_salinity = median(mean_salinity, na.rm = TRUE),
-    )
-
-# or with plotrix
-library(plotrix)
-catch_data_final |>
-  group_by(scientific_name, zone) |>
-  summarise(
-    sem_salinity = std.error(count),
+   # sem_salinity = sd(mean_salinity) / sqrt(n()),
     sd_salinity = sd(mean_salinity, na.rm = TRUE),
     median_salinity = median(mean_salinity, na.rm = TRUE),
     .groups = "drop"
   )
+
+# And from this a plot
+sal_sum |> 
+  ggplot(aes(x = zone, y = median_salinity)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = median_salinity - sd_salinity, ymax = median_salinity + sd_salinity), width = 0.2) +
+  theme_minimal() +
+  labs(#title = "Median Salinity by Zone with Standard Deviation Error Bars",
+       x = "Zone",
+       y = "Median Salinity (ppt)")
 ```
 
-# Make point and error bar plot of salinity by zone for each species
+### There is a clear salinity gradient across the zones, with the upper estuary being fresher and the lower estuary being more saline. This is consistent with what we would expect in an estuarine system, where freshwater inputs from rivers mix with seawater from the ocean. This salinity gradient could be an important driver of fish abundance patterns across these zones, as different species may have different salinity preferences or tolerances.
+
+## Turbidity
 
 ```{r}
+turb_sum <- 
+  catch_data_final |>
+  group_by(zone) |>
+  summarise(
+    sd_turbidity = sd(mean_turbidity, na.rm = TRUE),
+    median_turbidity = median(mean_turbidity, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+turb_sum |>
+  ggplot(aes(x = zone, y = median_turbidity)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = median_turbidity - sd_turbidity, ymax = median_turbidity + sd_turbidity), width = 0.2) +
+  theme_minimal() +
+  labs(#title = "Median Turbidity by Zone with Standard Deviation Error Bars",
+       x = "Zone",
+       y = "Median Turbidity (NTU)")
+```
+
+### There is minimal tubidity differences across the zones, with all zones having similar median turbidity values. This suggests that turbidity may not be a major driver of fish abundance patterns across these zones, although it could still have some influence on certain species that are more sensitive to turbidity levels.
+
+## Temperature
+
+```{r}
+temp_sum <- 
+  catch_data_final |>
+  group_by(zone) |>
+  summarise(
+    sd_temperature = sd(mean_temp, na.rm = TRUE),
+    median_temperature = median(mean_temp, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+temp_sum |>
+  ggplot(aes(x = zone, y = median_temperature)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = median_temperature - sd_temperature, ymax = median_temperature + sd_temperature), width = 0.2) +
+  theme_minimal() +
+  labs(#title = "Median Temperature by Zone with Standard Deviation Error Bars",
+       x = "Zone",
+       y = "Median Temperature (°C)")
+
+```
+
+### There is a slight temperature gradient across the zones, with the upper estuary being slightly warmer than the lower estuary. However, the differences in median temperature across the zones are relatively small. This suggests that temperature may not be a strong driver of fish abundance patterns across these zones.
+
+## Salinity is the most pronounced environmental gradient across these zones, and is likely to be the most important driver of fish abundance patterns in this estuarine system. 
+
+## Remake salinity plot presentable for publication
+
+```{r}
+#| fig-cap: "Salinity Gradient across zones. Ross River Estuary System, Townsville, NQ, Australia May 2026."
+
 sal_sum |> 
   ggplot(aes(x = zone, y = median_salinity)) +
   geom_point() +
@@ -267,7 +337,9 @@ sal_sum |>
   
 ```
 
-# Calculate fish catch abundance statistics (mean and standard error) by zone and species
+## We can now turn to looking at how fish abundance varies across these zones, and whether it is related to the salinity gradient we have observed.
+
+### Calculate summary stats
 
 ```{r}
 fish_stats <- catch_data_final |>
@@ -279,20 +351,22 @@ fish_stats <- catch_data_final |>
   )
 ```
 
-# Plot fish catch abundance by zone and species with standard error
+### Plot fish abundance across zones
 
 ```{r}
 fish_stats |> 
   ggplot(aes(x = zone, y = mean_catch, fill = zone)) +
-  geom_point(position = "dodge", size = 2, pch = 23) +
-  #geom_line(group = 1) +
+  geom_line(group = 1) +
+  # add in points from master data
+  geom_point(data = catch_data_final, aes(x = zone, y = count), 
+             position = position_jitter(width = 0.2), alpha = 0.2, size = 1, inherit.aes = FALSE) +
+  geom_point(position = "dodge", size = 4, pch = 23) +
+  
   geom_errorbar(aes(ymin = mean_catch - sem_catch, ymax = mean_catch + sem_catch), 
                 position = position_dodge(0.9), width = 0.2) +
-  # add in points from master data
-  # geom_point(data = catch_data_final, aes(x = zone, y = count), 
-  #           position = position_jitter(width = 0.2), alpha = 0.5, size = 1, inherit.aes = FALSE) +
+  
   facet_wrap(~ scientific_name, scales = "fixed") +
-  theme_bw() +
+  theme_minimal() +
   theme(
     strip.text = element_text(face = "italic", size = 10, colour = "grey20"),
    # legend.position = "bottom"
