@@ -6,8 +6,6 @@ This repository contains work completed for Module 2 of MB5370 Techniques in Mar
 
 The module built on the programming skills developed in Module 1 and focused more strongly on preparing real ecological datasets for analysis and interpreting patterns in a marine science context.
 
-An independent analysis examined seasonal patterns in Spanish mackerel catch rates and sea surface temperature across different fishing grounds in the Indian Ocean.
-
 ## Repository contents
 
 - `code/` – workshop exercises and R analysis scripts
