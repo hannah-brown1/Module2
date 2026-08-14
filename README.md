@@ -22,8 +22,6 @@ The module built on the programming skills developed in Module 1 and focused mor
 
 ## Data
 
-## Data
-
 Earlier activities in this module used datasets available within R to develop skills in data wrangling, visualisation and analysis.
 
 For the Keystone exercise used four datasets provided through the [MB5370 R for Marine Science class repository](https://github.com/MB-5370/R4MarineScience). These represented a study of water quality and predatory fish assemblages along the Ross River Estuary gradient:
